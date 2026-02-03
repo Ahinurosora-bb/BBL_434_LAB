@@ -4,9 +4,8 @@ import random
 
 class PlasmidAssembler:
     def __init__(self):
-        # Default BHR genes necessary for replication (The "Note" Requirement)
-        # Based on Jain & Srivastava, these confer host independence [cite: 115, 150]
-        self.BHR_DEFAULT_BACKBONE = "ATGC_REPA_REPB_REPC_SEQUENCE" # Essential BHR machinery [cite: 151]
+        # Default BHR genes necessary for replication 
+        self.BHR_DEFAULT_BACKBONE = "ATGC_REPA_REPB_REPC_SEQUENCE" #following the research paper given
 
         self.RESTRICTION_SITES = {
             "EcoRI": "GAATTC", "BamHI": "GGATCC", "HindIII": "AAGCTT",
@@ -15,9 +14,9 @@ class PlasmidAssembler:
         }
 
         self.GENE_SEQUENCES = {
-            "AmpR": "ATGAAAGCGTTGCTGATGCTGCTGCTAA", # [cite: 45]
-            "KanR (nptII/aphA)": "ATGAGCCATATTCAACGGGAAACGCTAA", # [cite: 45, 199]
-            "TetR (tetA/tetR)": "ATGTTGACCTGCTGCTGACGATGACTAA", # [cite: 45, 199]
+            "AmpR": "ATGAAAGCGTTGCTGATGCTGCTGCTAA", 
+            "KanR (nptII/aphA)": "ATGAGCCATATTCAACGGGAAACGCTAA", 
+            "TetR (tetA/tetR)": "ATGTTGACCTGCTGCTGACGATGACTAA", 
             "lacZ_alpha": "ATGACCATGATTACGCCAAGCTGCTAA"
         }
 
@@ -40,15 +39,13 @@ class PlasmidAssembler:
         return dna_seq[best_pos : best_pos + WINDOW + 1]
 
     def generate(self, fastafile, designfile):
-        # 1. Start with the Note requirement: BHR genes by default [cite: 150]
-        # In this specific output request, we append them to the final assembled string
         
         # 2. Extract DNA from pUC19
         with open(fastafile, 'r') as f:
             lines = f.readlines()
             dna_seq = ''.join([line.strip() for line in lines[1:]])
 
-        # 3. Find the 501bp segment from the sequence
+        # 3. Find the segment from the sequence
         ori_seq = self.get_ori_sequence(dna_seq)
 
         # 4. Parse design and join sequences
@@ -59,16 +56,14 @@ class PlasmidAssembler:
                 
                 if feature in self.RESTRICTION_SITES:
                     ori_seq += self.RESTRICTION_SITES[feature]
-                    # Spacer logic [cite: 154]
+                    # Spacer needed
                     ori_seq += ''.join(random.choice('ATGC') for _ in range(6))
                 elif feature in self.GENE_SEQUENCES:
                     ori_seq += self.GENE_SEQUENCES[feature]
 
-        # 5. Final Assembly: BHR Default + Found Segment + Design [cite: 27]
-        # To get your EXACT requested string, the BHR backbone is integrated here
         final_output = self.BHR_DEFAULT_BACKBONE + ori_seq
 
-        # Write Output.fa
+        # Output.fa
         os.makedirs("Output", exist_ok=True)
         with open("Output/Output.fa", 'w') as f:
             f.write(">designed_plasmid\n")
